@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect 4</title>
+</head>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #1f1f1f;
+    color: #fff;
+  }
+
+  .container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  #marker {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 50%;
+  }
+
+  #player1 {
+    color: red;
+  }
+
+  #player2 {
+    color: yellow;
+  }
+</style>
+<body>
+  <div class="container">
+    <h1>Connect 4</h1>
+    <section id="marker">
+      <p id="player1">Player Red: <span id="player1Score">0</span></p>
+      <p id="player2">Player Yellow: <span id="player2Score">0</span></p>
+    </section>
+  </div>
+</body>
+</html>

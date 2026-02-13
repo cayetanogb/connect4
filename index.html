@@ -1,91 +1,234 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connect 4</title>
-</head>
-<style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connect 4</title>
+  </head>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  body {
-    background-color: #1f1f1f;
-    color: #fff;
-  }
+    body {
+      background-color: #1f1f1f;
+      color: #fff;
+    }
 
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    gap: 2rem;
-  }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      gap: 2rem;
+    }
 
-  #marker {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10rem;
-  }
+    #marker {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10rem;
+    }
 
-  #player1 {
-    color: #ff0000;
-  }
+    #player1 {
+      color: #ff0000;
+    }
 
-  #player2 {
-    color: #ffff00;
-  }
+    #player2 {
+      color: #ffff00;
+    }
 
-  #board {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(6, 1fr);
-    background-color: rgb(19, 82, 240);
-    gap: 1rem;
-    padding: 1rem;
-  }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: repeat(6, 1fr);
+      background-color: rgb(19, 82, 240);
+      gap: 1rem;
+      padding: 1rem;
+    }
 
-  .cell {
-    background-color: #fff;
-    border: 1px solid #fff;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-  }
-</style>
-<script type="module">
-  const player1Score = document.getElementById('player1Score');
-  const player2Score = document.getElementById('player2Score');
-  const board = document.getElementById('board');
+    .cell {
+      background-color: #fff;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+    }
 
-  function renderBoard() {
-    board.innerHTML = '';
-    for (let row = 0; row < 6; row++) {
-      for (let col = 0; col < 7; col++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.dataset.row = row;
-        cell.dataset.col = col;
-        board.appendChild(cell);
+    .cell-marker {
+      animation: bounce 0.5s normal;
+      border-radius: 50%;
+      height: 100%;
+    }
+
+    @keyframes bounce {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
       }
     }
-  }
 
-  renderBoard();
-</script>
-<body>
-  <div class="container">
-    <h1>Connect 4</h1>
-    <section id="marker">
-      <p id="player1">Player Red: <span id="player1Score">0</span></p>
-      <p id="player2">Player Yellow: <span id="player2Score">0</span></p>
-    </section>
-    <section id="board"></section>
-  </div>
-</body>
+    #result {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      row-gap: 1rem;
+    }
+
+    #resetBtn {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 10px;
+      border: none;
+      background-color: green;
+      color: #fff;
+    }
+
+    #resetBtn:hover {
+      background-color: darkgreen;
+    }
+  </style>
+  <script type="module">
+    const player1Score = document.getElementById('player1Score')
+    const player2Score = document.getElementById('player2Score')
+    const boardElement = document.getElementById('board')
+    const resetBtn = document.getElementById('resetBtn')
+    const resultContent = document.getElementById('result')
+    const resultText = document.getElementById('resultText')
+    let board = []
+    let currentPlayer = 'red'
+
+    function initGame() {
+      board = Array.from({ length: 6 }, () => Array(7).fill(null))
+      resultContent.style.display = 'none';
+      renderBoard()
+    }
+
+    function renderBoard() {
+      boardElement.innerHTML = ''
+      for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 7; col++) {
+          const cell = document.createElement('div')
+          const span = document.createElement('div')
+          cell.classList.add('cell')
+          cell.dataset.row = row
+          cell.dataset.column = col
+          cell.addEventListener('click', () => handleColumnClick(col))
+          cell.appendChild(span)
+          boardElement.appendChild(cell)
+        }
+      }
+    }
+
+    function handleColumnClick(column) {
+      const row = getLowestEmptyRow(column)
+      if (row !== null) {
+        board[row][column] = currentPlayer
+        const cell = document.querySelector(
+          `.cell[data-row="${row}"][data-column="${column}"]`,
+        )
+        const span = cell.querySelector('div')
+        cell.dataset.value = currentPlayer
+        span.classList.add('cell-marker')
+        span.style.backgroundColor = currentPlayer
+        currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red'
+        checkWinner()
+      }
+    }
+
+    function getLowestEmptyRow(column) {
+      for (let row = 5; row >= 0; row--) {
+        if (!board[row][column]) {
+          return row
+        }
+      }
+      return null
+    }
+
+    function getEmptySpaces() {
+      for (let row = 0; row < 6; row++) {
+        for (let col = 0; col < 7; col++) {
+          if (!board[row][col]) {
+            return true
+          }
+        }
+      }
+      return false
+    }
+
+    function checkWinner() {
+      const rows = board.length
+      const columns = board[0].length
+
+      if (!getEmptySpaces()) {
+        resultText.textContent = 'Empate'
+        resultContent.style.display = 'flex'
+        return
+      }
+
+      for (let row = 0; row < rows; row++) {
+        for (let column = 0; column < columns; column++) {
+          const cell = board[row][column]
+
+          if (cell === null) continue
+
+          if (
+            (row + 3 < rows &&
+              column + 3 < columns &&
+              cell === board[row + 1][column + 1] &&
+              cell === board[row + 2][column + 2] &&
+              cell === board[row + 3][column + 3]) ||
+            (row + 3 < rows &&
+              column - 3 >= 0 &&
+              cell === board[row + 1][column - 1] &&
+              cell === board[row + 2][column - 2] &&
+              cell === board[row + 3][column - 3]) ||
+            (row + 3 < rows &&
+              cell === board[row + 1][column] &&
+              cell === board[row + 2][column] &&
+              cell === board[row + 3][column]) ||
+            (column + 3 < columns &&
+              cell === board[row][column + 1] &&
+              cell === board[row][column + 2] &&
+              cell === board[row][column + 3])
+          ) {
+            if (cell === 'red') {
+              player1Score.textContent = parseInt(player1Score.textContent) + 1
+            } else {
+              player2Score.textContent = parseInt(player2Score.textContent) + 1
+            }
+            resultText.textContent =
+              cell === 'red'
+                ? 'Ganador jugador rojo'
+                : 'Ganador jugador amarillo'
+            resultContent.style.display = 'flex';
+          }
+        }
+      }
+    }
+
+    resetBtn.addEventListener('click', initGame)
+
+    initGame()
+  </script>
+  <body>
+    <div class="container">
+      <h1>Connect 4</h1>
+      <section id="marker">
+        <p id="player1">Player Red: <span id="player1Score">0</span></p>
+        <p id="player2">Player Yellow: <span id="player2Score">0</span></p>
+      </section>
+      <section id="result">
+        <p id="resultText"></p>
+        <button id="resetBtn">Reset Game</button>
+      </section>
+      <section id="board"></section>
+    </div>
+  </body>
 </html>
